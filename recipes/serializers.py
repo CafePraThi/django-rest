@@ -2,6 +2,7 @@ from django.contrib.auth.models import User
 from rest_framework import serializers
 from tag.models import Tag
 from .models import Recipe
+from authors.validators import AuthorRecipeValidator
 
 
 class TagSerializer(serializers.ModelSerializer):
@@ -17,7 +18,9 @@ class RecipeSerializer(serializers.ModelSerializer):
         fields = [
             'id', 'title', 'description','author',
             'category', 'tags', 'public', 'preparation',
-            'tag_objects', 'tag_links', 
+            'tag_objects', 'tag_links', 'preparation_time',
+            'preparation_time_unit', 'servings', 'servings_unit',
+            'preparation_steps', 'cover'
 
          ]
 
@@ -48,25 +51,8 @@ class RecipeSerializer(serializers.ModelSerializer):
 
     def validate(self, attrs):
         super_validate = super().validate(attrs)
-
-
-        title = attrs.get('title')
-        description = attrs.get('description')
-
-        if title == description:
-            raise serializers.ValidationError(
-                {
-                    "title": ["Posso", "ter", "mais de um erro"],
-                    "description": ["Posso", "ter", "mais de um erro"],
-                }
-            )
+        AuthorRecipeValidator(data=attrs, ErrorClass=serializers.ValidationError)
 
         return super_validate
     
-    def validate_title(self, value):
-        title = value
 
-        if len(title) < 5:
-            raise serializers.ValidationError('Must have at least 5 chars.')
-
-        return title
